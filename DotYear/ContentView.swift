@@ -1,6 +1,5 @@
 import SwiftUI
 
-
 struct ContentView: View {
     @State private var selectedView: GridViewType = .year
     @State private var selectedDay: Int? = nil
@@ -97,7 +96,7 @@ struct ContentView: View {
                                     .foregroundColor(selectedView == view ? .blue : .secondary)
                             }
                         }
-                        .buttonStyle(ScaleButtonStyle())
+                        .buttonStyle(ScaleButtonStyle()) // Apply the custom button style
                     }
                 }
                 .padding(.top, 20)
@@ -214,52 +213,6 @@ struct ContentView: View {
     }
 }
 
-
-//day dot view
-struct DayDotView: View {
-    let day: Int
-    let daysPassed: Int
-    let isSelected: Bool
-    let hasNote: Bool
-    var dotSize: CGFloat = 12
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(getDotColor())
-                .frame(width: isSelected ? dotSize * 1.5 : dotSize, height: isSelected ? dotSize * 1.5 : dotSize)
-                .shadow(color: getDotColor().opacity(0.2), radius: isSelected ? 8 : 4, x: 0, y: isSelected ? 4 : 2)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected)
-
-            if isSelected {
-                Text("\(day + 1)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .transition(.scale.combined(with: .opacity))
-            }
-
-            if hasNote {
-                Image(systemName: "pencil.circle.fill")
-                    .font(.system(size: 8))
-                    .foregroundColor(.white)
-                    .offset(x: 6, y: 6)
-                    .transition(.scale.combined(with: .opacity))
-            }
-        }
-    }
-
-    private func getDotColor() -> Color {
-        if day < daysPassed {
-            return Color(red: 0.86, green: 0.08, blue: 0.24) // Crimson for past days
-        } else if day == daysPassed {
-            return Color.green // Current day
-        } else {
-            return Color.gray.opacity(0.3) // Future days
-        }
-    }
-}
-// MARK: - Grid Views (Year, Month, Week)
-
 // MARK: - Grid Views (Year, Month, Week)
 
 struct YearGridView: View {
@@ -278,7 +231,8 @@ struct YearGridView: View {
                     day: day,
                     daysPassed: daysPassed,
                     isSelected: selectedDay == day,
-                    hasNote: dailyLogs[day] != nil
+                    hasNote: dailyLogs[day] != nil,
+                    isCurrentDay: day == daysPassed - 1 // Highlight current day
                 )
                 .onTapGesture {
                     selectedDay = day
@@ -298,16 +252,17 @@ struct MonthGridView: View {
     let daysPassed: Int
     
     let totalMonths = 12
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 20), count: 4) // Adjusted spacing
+    let columns = Array(repeating: GridItem(.flexible(), spacing: 20), count: 4)
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 20) { // Increased spacing
+        LazyVGrid(columns: columns, spacing: 20) {
             ForEach(0..<totalMonths, id: \.self) { month in
                 MonthBarView(
                     month: month,
                     currentMonth: getCurrentMonth(),
                     isSelected: selectedDay == month,
-                    hasNote: dailyLogs[month] != nil
+                    hasNote: dailyLogs[month] != nil,
+                    isCurrentMonth: month == getCurrentMonth() // Highlight current month
                 )
                 .onTapGesture {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0.5)) {
@@ -317,7 +272,7 @@ struct MonthGridView: View {
                 }
             }
         }
-        .padding(.horizontal, 32) // Increased padding for better alignment
+        .padding(.horizontal, 32)
         .padding(.top, 24)
     }
     
@@ -328,93 +283,6 @@ struct MonthGridView: View {
     }
 }
 
-struct MonthBarView: View {
-    let month: Int
-    let currentMonth: Int
-    let isSelected: Bool
-    let hasNote: Bool
-    var barWidth: CGFloat = 80 // Increased width
-    var barHeight: CGFloat = 120 // Increased height
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12) // Increased corner radius
-                .fill(getBarColor())
-                .frame(width: isSelected ? barWidth * 1.1 : barWidth, height: isSelected ? barHeight * 1.1 : barHeight)
-                .shadow(color: getBarColor().opacity(0.3), radius: isSelected ? 12 : 6, x: 0, y: isSelected ? 6 : 3)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected)
-
-            VStack(spacing: 8) {
-                Text("\(month + 1)") // Display month number
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .transition(.scale.combined(with: .opacity))
-
-                if hasNote {
-                    Image(systemName: "pencil.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(.white)
-                        .transition(.scale.combined(with: .opacity))
-                }
-            }
-        }
-    }
-
-    private func getBarColor() -> Color {
-        if month < currentMonth {
-            return Color(red: 0.86, green: 0.08, blue: 0.24) // Crimson for past months
-        } else if month == currentMonth {
-            return Color.green // Current month
-        } else {
-            return Color.gray.opacity(0.3) // Future months
-        }
-    }
-}
-
-//struct MonthBarView: View {
-//    let month: Int
-//    let currentMonth: Int
-//    let isSelected: Bool
-//    let hasNote: Bool
-//    var barWidth: CGFloat = 40
-//    var barHeight: CGFloat = 60
-//
-//    var body: some View {
-//        ZStack {
-//            RoundedRectangle(cornerRadius: 8)
-//                .fill(getBarColor())
-//                .frame(width: isSelected ? barWidth * 1.2 : barWidth, height: isSelected ? barHeight * 1.2 : barHeight)
-//                .shadow(color: getBarColor().opacity(0.2), radius: isSelected ? 8 : 4, x: 0, y: isSelected ? 4 : 2)
-//                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected)
-//
-//            if isSelected {
-//                Text("\(month + 1)")
-//                    .font(.system(size: 12, weight: .bold, design: .rounded))
-//                    .foregroundColor(.white)
-//                    .transition(.scale.combined(with: .opacity))
-//            }
-//
-//            if hasNote {
-//                Image(systemName: "pencil.circle.fill")
-//                    .font(.system(size: 8))
-//                    .foregroundColor(.white)
-//                    .offset(x: 16, y: 24)
-//                    .transition(.scale.combined(with: .opacity))
-//            }
-//        }
-//    }
-//
-//    private func getBarColor() -> Color {
-//        if month < currentMonth {
-//            return Color(red: 0.86, green: 0.08, blue: 0.24) // Crimson for past months
-//        } else if month == currentMonth {
-//            return Color.green // Current month
-//        } else {
-//            return Color.gray.opacity(0.3) // Future months
-//        }
-//    }
-//}
-
 struct WeekGridView: View {
     @Binding var selectedDay: Int?
     @Binding var dailyLogs: [Int: String]
@@ -422,16 +290,17 @@ struct WeekGridView: View {
     let daysPassed: Int
     
     let totalWeeks = 52
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 7) // Adjusted spacing
+    let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7) // Reduced spacing
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) { // Increased spacing
+        LazyVGrid(columns: columns, spacing: 8) { // Reduced spacing
             ForEach(0..<totalWeeks, id: \.self) { week in
                 WeekBarView(
                     week: week,
                     currentWeek: getCurrentWeek(),
                     isSelected: selectedDay == week,
-                    hasNote: dailyLogs[week] != nil
+                    hasNote: dailyLogs[week] != nil,
+                    isCurrentWeek: week == getCurrentWeek() - 1 // Highlight current week
                 )
                 .onTapGesture {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0.5)) {
@@ -441,8 +310,8 @@ struct WeekGridView: View {
                 }
             }
         }
-        .padding(.horizontal, 32) // Increased padding for better alignment
-        .padding(.top, 16) // Reduced top padding to make space for footer
+        .padding(.horizontal, 32)
+        .padding(.top, 16)
     }
     
     // Helper function to get the current week of the year
@@ -452,32 +321,126 @@ struct WeekGridView: View {
     }
 }
 
+// MARK: - Views for Grid Items
+
+struct DayDotView: View {
+    let day: Int
+    let daysPassed: Int
+    let isSelected: Bool
+    let hasNote: Bool
+    let isCurrentDay: Bool
+    var dotSize: CGFloat = 12
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(getDotColor())
+                .frame(width: dotSize, height: dotSize) // Consistent size
+                .shadow(color: getDotColor().opacity(0.2), radius: 4, x: 0, y: 2)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected || isCurrentDay)
+
+            if hasNote {
+                Image(systemName: "pencil.circle.fill")
+                    .font(.system(size: 8))
+                    .foregroundColor(.white)
+                    .offset(x: 6, y: 6)
+                    .transition(.scale.combined(with: .opacity))
+            }
+        }
+    }
+
+    private func getDotColor() -> Color {
+        if day < daysPassed {
+            return Color(red: 0.86, green: 0.08, blue: 0.24).opacity(0.5) // Faded crimson for past days
+        } else if day == daysPassed - 1 {
+            return Color(red: 0.86, green: 0.08, blue: 0.24) // Bright crimson for current day
+        } else {
+            return Color.gray.opacity(0.3) // Future days
+        }
+    }
+}
+
+struct MonthBarView: View {
+    let month: Int
+    let currentMonth: Int
+    let isSelected: Bool
+    let hasNote: Bool
+    let isCurrentMonth: Bool
+    var barWidth: CGFloat = 80
+    var barHeight: CGFloat = 120
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(getBarColor())
+                .frame(width: barWidth, height: barHeight) // Consistent size
+                .shadow(color: getBarColor().opacity(0.3), radius: 6, x: 0, y: 3)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected || isCurrentMonth)
+
+            VStack(spacing: 8) {
+                Text("\(month + 1)")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundColor(getTextColor())
+                    .transition(.scale.combined(with: .opacity))
+
+                if hasNote {
+                    Image(systemName: "pencil.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(getTextColor())
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+        }
+    }
+
+    private func getBarColor() -> Color {
+        if month < currentMonth {
+            return Color(red: 0.86, green: 0.08, blue: 0.24).opacity(0.5) // Faded crimson for past months
+        } else if month == currentMonth {
+            return Color(red: 0.86, green: 0.08, blue: 0.24) // Bright crimson for current month
+        } else {
+            return Color.gray.opacity(0.3) // Future months
+        }
+    }
+
+    private func getTextColor() -> Color {
+        if month < currentMonth {
+            return Color.primary.opacity(0.5) // Faded text for past months
+        } else if month == currentMonth {
+            return .white // White text for current month
+        } else {
+            return Color.primary.opacity(0.3) // Muted text for future months
+        }
+    }
+}
+
 struct WeekBarView: View {
     let week: Int
     let currentWeek: Int
     let isSelected: Bool
     let hasNote: Bool
-    var barWidth: CGFloat = 40 // Increased width
-    var barHeight: CGFloat = 50 // Reduced height to ensure footer visibility
+    let isCurrentWeek: Bool
+    var barWidth: CGFloat = 40
+    var barHeight: CGFloat = 50
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8) // Increased corner radius
+            RoundedRectangle(cornerRadius: 8)
                 .fill(getBarColor())
-                .frame(width: isSelected ? barWidth * 1.1 : barWidth, height: isSelected ? barHeight * 1.1 : barHeight)
-                .shadow(color: getBarColor().opacity(0.3), radius: isSelected ? 12 : 6, x: 0, y: isSelected ? 6 : 3)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected)
+                .frame(width: barWidth, height: barHeight) // Consistent size
+                .shadow(color: getBarColor().opacity(0.3), radius: 6, x: 0, y: 3)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected || isCurrentWeek)
 
             VStack(spacing: 4) {
-                Text("\(week + 1)") // Display week number
+                Text("\(week + 1)")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(getTextColor())
                     .transition(.scale.combined(with: .opacity))
 
                 if hasNote {
                     Image(systemName: "pencil.circle.fill")
                         .font(.system(size: 12))
-                        .foregroundColor(.white)
+                        .foregroundColor(getTextColor())
                         .transition(.scale.combined(with: .opacity))
                 }
             }
@@ -486,57 +449,26 @@ struct WeekBarView: View {
 
     private func getBarColor() -> Color {
         if week < currentWeek {
-            return Color(red: 0.86, green: 0.08, blue: 0.24) // Crimson for past weeks
-        } else if week == currentWeek {
-            return Color.green // Current week
+            return Color(red: 0.86, green: 0.08, blue: 0.24).opacity(0.5) // Faded crimson for past weeks
+        } else if week == currentWeek - 1 {
+            return Color(red: 0.86, green: 0.08, blue: 0.24) // Bright crimson for current week
         } else {
             return Color.gray.opacity(0.3) // Future weeks
         }
     }
-}
-struct DayBarView: View {
-    let day: Int
-    let daysPassed: Int
-    let isSelected: Bool
-    let hasNote: Bool
-    var barWidth: CGFloat = 20
-    var barHeight: CGFloat = 40
 
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(getDotColor())
-                .frame(width: isSelected ? barWidth * 1.2 : barWidth, height: isSelected ? barHeight * 1.2 : barHeight)
-                .shadow(color: getDotColor().opacity(0.2), radius: isSelected ? 8 : 4, x: 0, y: isSelected ? 4 : 2)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected)
-
-            if isSelected {
-                Text("\(day + 1)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .transition(.scale.combined(with: .opacity))
-            }
-
-            if hasNote {
-                Image(systemName: "pencil.circle.fill")
-                    .font(.system(size: 8))
-                    .foregroundColor(.white)
-                    .offset(x: 10, y: 16)
-                    .transition(.scale.combined(with: .opacity))
-            }
-        }
-    }
-
-    private func getDotColor() -> Color {
-        if day < daysPassed {
-            return Color(red: 0.86, green: 0.08, blue: 0.24) // Crimson for past days
-        } else if day == daysPassed {
-            return Color.green // Current day
+    private func getTextColor() -> Color {
+        if week < currentWeek {
+            return Color.primary.opacity(0.5) // Faded text for past weeks
+        } else if week == currentWeek - 1 {
+            return .white // White text for current week
         } else {
-            return Color.gray.opacity(0.3) // Future days
+            return Color.primary.opacity(0.3) // Muted text for future weeks
         }
     }
 }
+
+// MARK: - Button Style
 
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
