@@ -331,11 +331,17 @@ struct DayDotView: View {
     let isCurrentDay: Bool
     var dotSize: CGFloat = 12
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         ZStack {
             Circle()
                 .fill(getDotColor())
                 .frame(width: dotSize, height: dotSize) // Consistent size
+                .overlay(
+                    Circle()
+                        .stroke(getBorderColor(), lineWidth: isCurrentDay ? 2 : 0) // Add border for current day
+                )
                 .shadow(color: getDotColor().opacity(0.2), radius: 4, x: 0, y: 2)
                 .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected || isCurrentDay)
 
@@ -358,6 +364,14 @@ struct DayDotView: View {
             return Color.gray.opacity(0.3) // Future days
         }
     }
+
+    private func getBorderColor() -> Color {
+        if isCurrentDay {
+            return colorScheme == .dark ? .white : .black // White border in dark mode, black in light mode
+        } else {
+            return .clear // No border for non-current days
+        }
+    }
 }
 
 struct MonthBarView: View {
@@ -369,11 +383,17 @@ struct MonthBarView: View {
     var barWidth: CGFloat = 80
     var barHeight: CGFloat = 120
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
                 .fill(getBarColor())
                 .frame(width: barWidth, height: barHeight) // Consistent size
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(getBorderColor(), lineWidth: isCurrentMonth ? 2 : 0) // Add border for current month
+                )
                 .shadow(color: getBarColor().opacity(0.3), radius: 6, x: 0, y: 3)
                 .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected || isCurrentMonth)
 
@@ -403,6 +423,14 @@ struct MonthBarView: View {
         }
     }
 
+    private func getBorderColor() -> Color {
+        if isCurrentMonth {
+            return colorScheme == .dark ? .white : .black // White border in dark mode, black in light mode
+        } else {
+            return .clear // No border for non-current months
+        }
+    }
+
     private func getTextColor() -> Color {
         if month < currentMonth {
             return Color.primary.opacity(0.5) // Faded text for past months
@@ -423,11 +451,17 @@ struct WeekBarView: View {
     var barWidth: CGFloat = 40
     var barHeight: CGFloat = 50
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
                 .fill(getBarColor())
                 .frame(width: barWidth, height: barHeight) // Consistent size
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(getBorderColor(), lineWidth: isCurrentWeek ? 2 : 0) // Add border for current week
+                )
                 .shadow(color: getBarColor().opacity(0.3), radius: 6, x: 0, y: 3)
                 .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.8), value: isSelected || isCurrentWeek)
 
@@ -453,7 +487,15 @@ struct WeekBarView: View {
         } else if week == currentWeek - 1 {
             return Color(red: 0.86, green: 0.08, blue: 0.24) // Bright crimson for current week
         } else {
-            return Color.gray.opacity(0.3) // Future weeks
+            return Color.gray.opacity(0.2) // Future weeks
+        }
+    }
+
+    private func getBorderColor() -> Color {
+        if isCurrentWeek {
+            return colorScheme == .dark ? .white : .black.opacity(0.2) // White border in dark mode, black in light mode
+        } else {
+            return .clear.opacity(0.2) // No border for non-current weeks
         }
     }
 
