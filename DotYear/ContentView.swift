@@ -76,7 +76,7 @@ struct ContentView: View {
                         }
                     }
                     .padding(.horizontal, 40) // Reduced left/right padding
-                    .padding(.top, 32)
+                    .padding(.top, 40)
                     
                     // Year and days left at the bottom
                     HStack {
